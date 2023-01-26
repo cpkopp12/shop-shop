@@ -9,7 +9,7 @@ import {
   ADD_TO_CART
 } from "../utils/actions";
 import Cart from "../components/Cart"
-
+import { idbPromise } from '../utils/helpers';
 import { QUERY_PRODUCTS } from '../utils/queries';
 import spinner from '../assets/spinner.gif';
 
@@ -24,15 +24,26 @@ function Detail() {
   const { products, cart } = state;
 
   useEffect(() => {
-    if (products.length) {
+    if (products.length) { //in global store
       setCurrentProduct(products.find(product => product._id === id));
-    } else if (data) {
+    } else if (data) { //retrived from server
       dispatch({
         type: UPDATE_PRODUCTS,
         products: data.products
       });
+
+      data.products.forEach((product) => {
+        idbPromise('products', 'put', product);
+      });
+    } else if (!loading) { //cache from idb
+      idbPromise('products', 'get').then((indexedProducts) => {
+        dispatch({ 
+          type: UPDATE_PRODUCTS,
+          products: indexedProducts
+        })
+      })
     }
-  }, [products, data, dispatch, id]);
+  }, [products, data, loading, dispatch, id]);
 
   const addToCart = () => {
     const itemInCart = cart.find((cartItem) => cartItem._id === id);

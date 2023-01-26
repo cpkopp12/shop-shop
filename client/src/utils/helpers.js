@@ -7,7 +7,7 @@ export function pluralize(name, count) {
 
 
 //indexedDB helper function
-export function ibdPromise(storeName, method, object) {
+export function idbPromise(storeName, method, object) {
   return new Promise((resolve, reject) => {
     // open db connection with name 'shop-shop' version 1
     const request = window.indexedDB.open('shop-shop', 1);
@@ -72,4 +72,5 @@ export function ibdPromise(storeName, method, object) {
     };
 
   });
-}
+};
+
