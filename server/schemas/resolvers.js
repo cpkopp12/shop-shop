@@ -53,39 +53,38 @@ const resolvers = {
       throw new AuthenticationError('Not logged in');
     },
     checkout: async (parent, args, context) => {
-      const order = new Order({ products: args.products });
-      const { products } = await order.populate('products');
-
+      const url = 'https://localhost:3001'
+      const order = await Order.create({ products: args.products });
       const line_items = [];
-
+      const orderid = order._id;
+      const { products } = await Order.findById(orderid).populate({ path: 'products' });
       for (let i = 0; i < products.length; i++) {
-        // generate product id
         const product = await stripe.products.create({
           name: products[i].name,
-          description: products[i].description
+          description: products[i].description,
+          images: [`${url}/images/${products[i].image}`]
         });
 
-        // generate price id using the product id
         const price = await stripe.prices.create({
           product: product.id,
           unit_amount: products[i].price * 100,
           currency: 'usd',
         });
 
-        // add price id to the line items array
         line_items.push({
           price: price.id,
           quantity: 1
         });
       }
+
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items,
         mode: 'payment',
-        success_url: 'https://example.com/success?session_id=cs_test_a1rsvfW72CpfyIT5cD5Ey0u4ktiGIOWdVNKS6zMMUZ08lEr4iMXDbjXCJC',
-        cancel_url: 'https://example.com/cancel'
+        success_url:  `${url}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${url}/`
       });
-      
+
       return { session: session.id };
     }
 
