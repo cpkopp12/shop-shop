@@ -1,4 +1,5 @@
-//DECLARATIONS: react, cartItem, auth, css, global state, toggle cart action -----------------------
+//DECLARATIONS: react, cartItem, auth, css, global state, 
+// query_checkout, stripe, toggle cart action, lazy query-----------------------
 import React, { useEffect } from 'react';
 import CartItem from '../CartItem';
 import Auth from '../../utils/auth';
@@ -6,11 +7,17 @@ import './style.css';
 import { useStoreContext } from '../../utils/GlobalState';
 import { TOGGLE_CART, ADD_MULTIPLE_TO_CART } from '../../utils/actions';
 import { idbPromise } from '../../utils/helpers';
+import { QUERY_CHECKOUT } from '../../utils/queries';
+import { loadStripe } from '@stripe/stripe-js';
+import { useLazyQuery } from '@apollo/client';
+
+const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
 
 
 //CArt COMPONENT ============================
 const Cart = () => {
     const [state, dispatch] = useStoreContext();
+    const [getCheckout, { data }] = useLazyQuery(QUERY_CHECKOUT);
 
     useEffect(() => {
         async function getCart() {
@@ -23,6 +30,14 @@ const Cart = () => {
         }
     }, [state.cart.length, dispatch]);
 
+    useEffect(() => {
+        if (data) {
+            stripePromise.then((res) => {
+                res.redirectToCheckout({ sessionId: data.checkout.session })
+            });
+        }
+    }, [data])
+
     function toggleCart() {
         dispatch({ type: TOGGLE_CART })
     };
@@ -33,7 +48,21 @@ const Cart = () => {
             sum += item.price * item.purchaseQuantity;
         });
         return sum.toFixed(2);
-    }
+    };
+
+    function submitCheckout() {
+        const productIds = [];
+        //array of ids for query
+        state.cart.forEach((item) => {
+            for (let i = 0; i < item.purchaseQuantity; i++) {
+                productIds.push(item._id);
+            }
+        });
+        //run query
+        getCheckout({
+            variables: { products: productIds }
+        });
+    };
 
     if (!state.cartOpen) {
         return (
@@ -60,7 +89,7 @@ const Cart = () => {
                         <strong>Total: ${claculateTotal()}</strong>
                         {
                             Auth.loggedIn() ?
-                                <button>
+                                <button onClick={submitCheckout}>
                                     Checkout
                                 </button>
                                 :
