@@ -34,7 +34,7 @@ None.
 Used a bootcamp tutorial to set up the server and react components, then refactored the code to use redux to manage global state on my own.
 
 ## Deployed Application
-Deployed through heroku at this [link](https://immense-cliffs-53870.herokuapp.com/.
+Deployed through heroku at this [link](https://immense-cliffs-53870.herokuapp.com/).
 
 
 ## Questions
