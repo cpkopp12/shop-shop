@@ -18,13 +18,13 @@ function ProductList(props) {
   const { currentCategory } = state;
 
   const { loading, data } = useQuery(QUERY_PRODUCTS);
-
   useEffect(() => {
     if(data) {
-      dispatch({
-        type: UPDATE_PRODUCTS,
-        products: data.products
-      });
+      props.loadProducts(data.products);
+      // dispatch({
+      //   type: UPDATE_PRODUCTS,
+      //   products: data.products
+      // });
   
       data.products.forEach((product) => {
         idbPromise('products', 'put', product);
@@ -34,26 +34,23 @@ function ProductList(props) {
       // since we're offline, get all of the data from the `products` store
       idbPromise('products', 'get').then((products) => {
         // use retrieved data to set global state for offline browsing
-        dispatch({
-          type: UPDATE_PRODUCTS,
-          products: products
-        });
+        props.loadProducts(products);
       });
     }
   }, [data, loading, dispatch]);
 
   function filterProducts() {
     if (!currentCategory) {
-      return state.products;
+      return props.allProducts;
     }
 
-    return state.products.filter(product => product.category._id === currentCategory);
+    return props.allProducts.filter(product => product.category._id === props.currentCategory);
   }
 
   return (
     <div className="my-2">
       <h2>Our Products:</h2>
-      {state.products.length ? (
+      {props.allProducts.length ? (
         <div className="flex-row">
           {filterProducts().map((product) => (
             <ProductItem
