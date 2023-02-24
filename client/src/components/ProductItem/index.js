@@ -4,22 +4,27 @@ import { pluralize } from "../../utils/helpers";
 import { ADD_TO_CART, UPDATE_CART_QUANTITY } from "../../utils/actions";
 import { useStoreContext } from '../../utils/GlobalState';
 import { idbPromise } from '../../utils/helpers'; 
+//redux imports
+import { connect } from 'react-redux';
+// import { ADD_TO_CART, UPDATE_CART_QUANTITY } from '../../reducers/actions'
 
-function ProductItem(item) {
+function ProductItem(props) {
   const {
     image,
     name,
     _id,
     price,
     quantity
-  } = item;
+  } = props.item; //props.item
 
   const [state, dispatch] = useStoreContext();
-  const { cart } = state;
+  // const { cart } = state;
 
   const addToCart = () => {
     // find the cart item with the matching id
-    const itemInCart = cart.find((cartItem) => cartItem._id === _id);
+    console.log(props.cart);
+    const itemInCart = props.cart.find((cartItem) => cartItem._id === _id);
+    console.log(itemInCart);
   
     // if there was a match, call UPDATE with a new purchase quantity
     if (itemInCart) {
@@ -35,9 +40,9 @@ function ProductItem(item) {
     } else {
       dispatch({
         type: ADD_TO_CART,
-        product: { ...item, purchaseQuantity: 1 }
+        product: { ...props.item, purchaseQuantity: 1 }//props.item*************
       });
-      idbPromise('cart', 'put', { ...item, purchaseQuantity: 1 });
+      idbPromise('cart', 'put', { ...props.item, purchaseQuantity: 1 });//props.item*************
     }
   };
 
@@ -59,4 +64,11 @@ function ProductItem(item) {
   );
 }
 
-export default ProductItem;
+const mapStateToProps = (state, ownProps) => {
+  return {
+    cart: state.cart,
+    item: ownProps
+  }
+}
+
+export default connect(mapStateToProps)(ProductItem);
