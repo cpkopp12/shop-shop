@@ -13,10 +13,10 @@ import { connect } from 'react-redux';
 import { UPDATE_PRODUCTS } from '../../reducers/actions'
 
 function ProductList(props) {
-  const [state, dispatch] = useStoreContext();
+  //const [state, dispatch] = useStoreContext();
 
-  const { currentCategory } = state;
-
+  //const { currentCategory } = state;
+  var filteredProds = [];
   const { loading, data } = useQuery(QUERY_PRODUCTS);
   useEffect(() => {
     if(data) {
@@ -37,14 +37,14 @@ function ProductList(props) {
         props.loadProducts(products);
       });
     }
-  }, [data, loading, dispatch]);
+  }, [data, loading]);
 
   function filterProducts() {
-    if (!currentCategory) {
+    if (!props.category) {
       return props.allProducts;
     }
-
-    return props.allProducts.filter(product => product.category._id === props.currentCategory);
+    filteredProds =props.allProducts.filter(product => product.category._id === props.category);
+    return filteredProds;
   }
 
   return (

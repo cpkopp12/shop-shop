@@ -7,42 +7,41 @@ import { idbPromise } from '../../utils/helpers';
 import { connect } from 'react-redux';
 import { UPDATE_CATEGORIES, UPDATE_CURRENT_CATEGORY } from '../../reducers/actions';
 
-function CategoryMenu() {
-  const [state, dispatch] = useStoreContext();
-  const { categories } = state;
+function CategoryMenu(props) {
+  //const [state, dispatch] = useStoreContext();
+  //const { categories } = state;
   const { loading, data: categoryData } = useQuery(QUERY_CATEGORIES);
 
   useEffect(() => {
     //update state when categoryData changes
     if (categoryData) {
-      dispatch({
-        type: UPDATE_CATEGORIES,
-        categories: categoryData.categories
-      });
+      props.loadCategories(categoryData.categories);
+      // dispatch({
+      //   type: UPDATE_CATEGORIES,
+      //   categories: categoryData.categories
+      // });
       categoryData.categories.forEach(category => {
         idbPromise('categories', 'put', category);
       })
     } else if (!loading) {
       idbPromise('categories', 'get').then(categories => {
-        dispatch({
-          type: UPDATE_CATEGORIES,
-          categories: categories
-        });
+        props.loadCategories(categories);
       });
     }
-  }, [categoryData, loading, dispatch]);
+  }, [categoryData, loading]);
 
   const handleClick = id => {
-    dispatch({
-      type: UPDATE_CURRENT_CATEGORY,
-      currentCategory: id
-    });
+    props.changeCurrentCategory(id);
+    // dispatch({
+    //   type: UPDATE_CURRENT_CATEGORY,
+    //   currentCategory: id
+    // });
   };
 
   return (
     <div>
       <h2>Choose a Category:</h2>
-      {categories.map(item => (
+      {props.allCategories.map(item => (
         <button
           key={item._id}
           onClick={() => {
@@ -77,4 +76,4 @@ const mapDispatchToProps = (dispatch) => {
 
 
 
-export default CategoryMenu;
+export default connect(mapStateToProps, mapDispatchToProps)(CategoryMenu);
