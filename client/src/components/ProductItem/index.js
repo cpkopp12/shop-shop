@@ -1,12 +1,19 @@
+//*********************************
+//MAPStATE TO PROPS DONE
+//NEED TO DO MAP DISPATCH TO PROPS
+//TO CLEAR ERROR
+//************************************** 
+
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { pluralize } from "../../utils/helpers";
-import { ADD_TO_CART, UPDATE_CART_QUANTITY } from "../../utils/actions";
+// import { ADD_TO_CART, UPDATE_CART_QUANTITY } from "../../utils/actions";
 import { useStoreContext } from '../../utils/GlobalState';
 import { idbPromise } from '../../utils/helpers'; 
 //redux imports
 import { connect } from 'react-redux';
-// import { ADD_TO_CART, UPDATE_CART_QUANTITY } from '../../reducers/actions'
+import { ADD_TO_CART, UPDATE_CART_QUANTITY } from '../../reducers/actions'
 
 function ProductItem(props) {
   const {
@@ -17,31 +24,33 @@ function ProductItem(props) {
     quantity
   } = props.item; //props.item
 
-  const [state, dispatch] = useStoreContext();
+  // const [state, dispatch] = useStoreContext();
   // const { cart } = state;
 
   const addToCart = () => {
     // find the cart item with the matching id
-    console.log(props.cart);
     const itemInCart = props.cart.find((cartItem) => cartItem._id === _id);
-    console.log(itemInCart);
   
     // if there was a match, call UPDATE with a new purchase quantity
     if (itemInCart) {
-      dispatch({
-        type: UPDATE_CART_QUANTITY,
-        _id: _id,
-        purchaseQuantity: parseInt(itemInCart.purchaseQuantity) + 1
-      });
+      props.updateCartQuantity(_id, itemInCart.purchaseQuantity);
+      // dispatch({
+      //   type: UPDATE_CART_QUANTITY,
+      //   _id: _id,
+      //   purchaseQuantity: parseInt(itemInCart.purchaseQuantity) + 1
+      // });
+      console.log(props);
       idbPromise('cart', 'put', {
         ...itemInCart,
         purchaseQuantity: parseInt(itemInCart.purchaseQuantity) + 1
       });
     } else {
-      dispatch({
-        type: ADD_TO_CART,
-        product: { ...props.item, purchaseQuantity: 1 }//props.item*************
-      });
+      props.addToCart({ ...props.item, purchaseQuantity: 1});
+      console.log(props);
+      // dispatch({
+      //   type: ADD_TO_CART,
+      //   product: { ...props.item, purchaseQuantity: 1 }//props.item*************
+      // });
       idbPromise('cart', 'put', { ...props.item, purchaseQuantity: 1 });//props.item*************
     }
   };
@@ -71,4 +80,15 @@ const mapStateToProps = (state, ownProps) => {
   }
 }
 
-export default connect(mapStateToProps)(ProductItem);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    updateCartQuantity: (id, cartQuantity) => {
+      dispatch({type: UPDATE_CART_QUANTITY, _id: id, purchaseQuantity: parseInt(cartQuantity) + 1 })
+    },
+    addToCart: (item) => {
+      dispatch({type: ADD_TO_CART, product: item})
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProductItem);
