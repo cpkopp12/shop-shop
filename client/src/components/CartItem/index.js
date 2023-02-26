@@ -1,19 +1,22 @@
 //DECLARATIONS: REACT ---------------------------
 import React from 'react';
-import { useStoreContext } from '../../utils/GlobalState';
-import { REMOVE_FROM_CART, UPDATE_CART_QUANTITY } from '../../utils/actions';
-import { idbPromise } from '../../utils/helpers'
+// import { useStoreContext } from '../../utils/GlobalState';
+import { REMOVE_FROM_CART, UPDATE_CART_QUANTITY } from '../../reducers/actions';
+import { idbPromise } from '../../utils/helpers';
+//redux imports
+import { connect } from 'react-redux';
 
 //CARTITEM COMPONENT ==============================
-const CartItem = ({ item }) => {
+const CartItem = (props) => {
+    console.log(props);
+    // const [, dispatch] = useStoreContext();
 
-    const [, dispatch] = useStoreContext();
-
-    const removeFromCart = item => {
-        dispatch({
-            type: REMOVE_FROM_CART,
-            _id: item._id
-        });
+    const removeFromCart = (item) => {
+        props.removeFromCart(item._id);
+        // dispatch({
+        //     type: REMOVE_FROM_CART,
+        //     _id: item._id
+        // });
         idbPromise('cart', 'delete', { ...item });
     }
 
@@ -22,46 +25,48 @@ const CartItem = ({ item }) => {
         const value = e.target.value;
 
         if (value === '0') {
-            dispatch({
-                type: REMOVE_FROM_CART,
-                _id: item._id
-            });
+            props.removeFromCart(props.item._id);
+            // dispatch({
+            //     type: REMOVE_FROM_CART,
+            //     _id: item._id
+            // });
 
-            idbPromise('cart', 'delete', { ...item });
+            idbPromise('cart', 'delete', { ...props.item });
         } else {
-            dispatch({
-                type: UPDATE_CART_QUANTITY,
-                _id: item._id,
-                purchasedQuantity: parseInt(value)
-            });
+            props.updateCartQuantity(props.item._id, value);
+            // dispatch({
+            //     type: UPDATE_CART_QUANTITY,
+            //     _id: item._id,
+            //     purchasedQuantity: parseInt(value)
+            // });
 
-            idbPromise('cart', 'put', { ...item, purchaseQuantity: parseInt(value) });
+            idbPromise('cart', 'put', { ...props.item, purchaseQuantity: parseInt(value) });
         }
 
     }
 
-    return(
+    return (
         <div className='flex-row'>
             <div>
                 <img 
-                    src={`/images/${item.image}`}
+                    src={`/images/${props.item.image}`}
                     alt=""
                 />
             </div>
             <div>
-                <div>{item.name}, ${item.price}</div>
+                <div>{props.item.name}, ${props.item.price}</div>
                 <div>
                     <span>Qty:</span>
                     <input
                         type="number"
                         placeholder="1"
-                        value={item.purchaseQuantity}
+                        value={props.item.purchaseQuantity}
                         onChange={onChange}
                     />
                     <span
                         role="img"
                         aria-label="trash"
-                        onClick={() => removeFromCart(item)}
+                        onClick={() => removeFromCart(props.item)}
                     >
                         🗑️
                     </span>
@@ -71,5 +76,19 @@ const CartItem = ({ item }) => {
     );
 };
 
+
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        removeFromCart: (id) => {
+            dispatch({type: REMOVE_FROM_CART, _id: id})
+        },
+        updateCartQuantity: (id, quantity) => {
+            dispatch({type: UPDATE_CART_QUANTITY, _id: id, purchaseQuantity: parseInt(quantity) })
+        }
+    }
+
+};
+
 //EXPORT -------------------
-export default CartItem;
+export default connect(mapDispatchToProps)(CartItem);
