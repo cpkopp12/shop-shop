@@ -28,7 +28,7 @@ function CategoryMenu(props) {
         props.loadCategories(categories);
       });
     }
-  }, [categoryData, loading]);
+  }, [categoryData, loading, props]);
 
   const handleClick = id => {
     props.changeCurrentCategory(id);

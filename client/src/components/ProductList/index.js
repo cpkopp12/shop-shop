@@ -37,7 +37,7 @@ function ProductList(props) {
         props.loadProducts(products);
       });
     }
-  }, [data, loading]);
+  }, [data, loading, props]);
 
   function filterProducts() {
     if (!props.category) {
