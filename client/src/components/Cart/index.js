@@ -29,7 +29,7 @@ const Cart = (props) => {
         if (!props.currentCart.length) {
             getCart();
         }
-    }, [props.currentCart.length, props]);
+    }, [props.currentCart.length]);
 
     useEffect(() => {
         if (data) {

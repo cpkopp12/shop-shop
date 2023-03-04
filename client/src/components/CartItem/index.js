@@ -76,7 +76,11 @@ const CartItem = (props) => {
     );
 };
 
+const mapStateToProps = () => {
+    return {
 
+    }
+}
 
 const mapDispatchToProps = (dispatch) => {
     return {
@@ -91,4 +95,4 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 //EXPORT -------------------
-export default connect(mapDispatchToProps)(CartItem);
+export default connect(mapStateToProps, mapDispatchToProps)(CartItem);
